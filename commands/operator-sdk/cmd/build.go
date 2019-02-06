@@ -32,6 +32,7 @@ import (
 	"github.com/ghodss/yaml"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var (
@@ -39,6 +40,13 @@ var (
 	testLocationBuild  string
 	enableTests        bool
 	dockerBuildArgs    string
+)
+
+const (
+	testOpt      = "enable-tests"
+	locOpt       = "test-location"
+	namespaceOpt = "namespaced-manifest"
+	dbOpts       = "docker-build-args"
 )
 
 func NewBuildCmd() *cobra.Command {
@@ -59,10 +67,15 @@ For example:
 `,
 		RunE: buildFunc,
 	}
-	buildCmd.Flags().BoolVar(&enableTests, "enable-tests", false, "Enable in-cluster testing by adding test binary to the image")
-	buildCmd.Flags().StringVar(&testLocationBuild, "test-location", "./test/e2e", "Location of tests")
-	buildCmd.Flags().StringVar(&namespacedManBuild, "namespaced-manifest", "deploy/operator.yaml", "Path of namespaced resources manifest for tests")
-	buildCmd.Flags().StringVar(&dockerBuildArgs, "docker-build-args", "", "Extra docker build arguments as one string such as \"--build-arg https_proxy=$https_proxy\"")
+	buildCmd.Flags().BoolVar(&enableTests, testOpt, false, "Enable in-cluster testing by adding test binary to the image")
+	buildCmd.Flags().StringVar(&testLocationBuild, locOpt, "./test/e2e", "Location of tests")
+	buildCmd.Flags().StringVar(&namespacedManBuild, namespaceOpt, "deploy/operator.yaml", "Path of namespaced resources manifest for tests")
+	buildCmd.Flags().StringVar(&dockerBuildArgs, dbOpts, "", "Extra docker build arguments as one string such as \"--build-arg https_proxy=$https_proxy\"")
+
+	if err := viper.BindPFlags(buildCmd.Flags()); err != nil {
+		log.Fatalf("Failed to bind build flags to viper: %v", err)
+	}
+
 	return buildCmd
 }
 

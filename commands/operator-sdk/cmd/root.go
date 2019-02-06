@@ -15,9 +15,16 @@
 package cmd
 
 import (
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
+	"github.com/operator-framework/operator-sdk/internal/util/projutil"
 	"github.com/operator-framework/operator-sdk/version"
+)
+
+var (
+	RootConf string
 )
 
 func NewRootCmd() *cobra.Command {
@@ -41,4 +48,22 @@ func NewRootCmd() *cobra.Command {
 	cmd.AddCommand(NewOLMCatalogCmd())
 
 	return cmd
+}
+
+func initConfig() error {
+	if RootConf != "" {
+		// Use config file from the flag.
+		viper.SetConfigFile(RootConf)
+	} else {
+		viper.AddConfigPath(projutil.MustGetwd())
+		// using SetConfigName allows users to use a .yaml, .json, or .toml file
+		viper.SetConfigName(".osdk-config")
+	}
+
+	if err := viper.ReadInConfig(); err == nil {
+		log.Info("Using config file: ", viper.ConfigFileUsed())
+	} else {
+		log.Warn("Could not load config file; using flags")
+	}
+	return nil
 }
