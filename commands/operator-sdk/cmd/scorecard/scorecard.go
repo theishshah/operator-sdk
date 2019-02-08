@@ -20,8 +20,6 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/operator-framework/operator-sdk/internal/util/projutil"
-
 	k8sInternal "github.com/operator-framework/operator-sdk/internal/util/k8sutil"
 	"github.com/operator-framework/operator-sdk/internal/util/yamlutil"
 
@@ -92,10 +90,9 @@ var (
 const scorecardPodName = "operator-scorecard-test"
 
 func ScorecardTests(cmd *cobra.Command, args []string) error {
-	err := initConfig()
-	if err != nil {
-		return err
-	}
+	var err error
+	viper := viper.Sub("scorecard")
+	fmt.Printf("%v", viper)
 	if viper.GetString(CRManifestOpt) == "" {
 		return errors.New("cr-manifest config option missing")
 	}
@@ -283,24 +280,6 @@ func ScorecardTests(cmd *cobra.Command, args []string) error {
 	for _, suggestion := range scSuggestions {
 		// 33 is yellow (specifically, the same shade of yellow that logrus uses for warnings)
 		fmt.Printf("\x1b[%dmSUGGESTION:\x1b[0m %s\n", 33, suggestion)
-	}
-	return nil
-}
-
-func initConfig() error {
-	if ScorecardConf != "" {
-		// Use config file from the flag.
-		viper.SetConfigFile(ScorecardConf)
-	} else {
-		viper.AddConfigPath(projutil.MustGetwd())
-		// using SetConfigName allows users to use a .yaml, .json, or .toml file
-		viper.SetConfigName(".osdk-scorecard")
-	}
-
-	if err := viper.ReadInConfig(); err == nil {
-		log.Info("Using config file: ", viper.ConfigFileUsed())
-	} else {
-		log.Warn("Could not load config file; using flags")
 	}
 	return nil
 }

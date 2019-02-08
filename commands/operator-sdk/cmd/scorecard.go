@@ -19,8 +19,8 @@ import (
 	"strings"
 
 	"github.com/operator-framework/operator-sdk/pkg/scaffold"
-
 	log "github.com/sirupsen/logrus"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -73,8 +73,8 @@ func NewScorecardCmd() *cobra.Command {
 	scorecardCmd.Flags().StringVar(&scConf.crdsDir, "crds-dir", scaffold.CRDsDir, "Directory containing CRDs (all CRD manifest filenames must have the suffix 'crd.yaml')")
 	scorecardCmd.Flags().BoolVar(&scConf.verbose, scorecard.VerboseOpt, false, "Enable verbose logging")
 
-	if err := viper.BindPFlags(scorecardCmd.Flags()); err != nil {
-		log.Fatalf("Failed to bind scorecard flags to viper: %v", err)
+	if err := viper.Sub("scorecard").BindPFlags(scorecardCmd.Flags()); err != nil {
+		log.Fatalf("Failed to bind build flags to viper: %v", err)
 	}
 
 	return scorecardCmd

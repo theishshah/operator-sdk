@@ -34,6 +34,8 @@ func NewRootCmd() *cobra.Command {
 		Version: version.Version,
 	}
 
+	initConfig()
+
 	cmd.AddCommand(NewNewCmd())
 	cmd.AddCommand(NewAddCmd())
 	cmd.AddCommand(NewBuildCmd())
@@ -47,6 +49,10 @@ func NewRootCmd() *cobra.Command {
 	cmd.AddCommand(NewRunCmd())
 	cmd.AddCommand(NewOLMCatalogCmd())
 
+	if err := viper.BindPFlags(cmd.Flags()); err != nil {
+		log.Fatalf("Failed to bind build flags to viper: %v", err)
+	}
+
 	return cmd
 }
 
@@ -57,8 +63,11 @@ func initConfig() error {
 	} else {
 		viper.AddConfigPath(projutil.MustGetwd())
 		// using SetConfigName allows users to use a .yaml, .json, or .toml file
-		viper.SetConfigName(".osdk-config")
+		viper.SetConfigName(".test-osdk-scorecard")
 	}
+
+	viper.SetEnvPrefix("osdk")
+	viper.AutomaticEnv()
 
 	if err := viper.ReadInConfig(); err == nil {
 		log.Info("Using config file: ", viper.ConfigFileUsed())
