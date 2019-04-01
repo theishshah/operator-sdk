@@ -117,9 +117,13 @@ func openAPIGen(binDir, hf string, fqApis []string) (err error) {
 		if projutil.IsGoVerbose() {
 			err = projutil.ExecCmd(cmd)
 		} else {
-			cmd.Stdout = ioutil.Discard
-			cmd.Stderr = ioutil.Discard
 			err = cmd.Run()
+			if err == nil {
+				cmd.Stdout = ioutil.Discard
+				cmd.Stderr = ioutil.Discard
+			} else {
+				return fmt.Errorf("failed to perform openapi code-generation: %v", err)
+			}
 		}
 		if err != nil {
 			return fmt.Errorf("failed to perform openapi code-generation: %v", err)
